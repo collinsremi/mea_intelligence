@@ -1,6 +1,6 @@
 Parameter,Baseline,Optimised
-Flue Gas Flow (kmol/hr),1000,1614.216
-Inlet CO2 (mol%),13,12.409
-Absorber Temp (°C),40,33.464
-MEA Conc (wt%),30,37.021
+Flue Gas Flow (kmol/hr),1000,1450.897
+Inlet CO2 (mol%),13,13.802
+Absorber Temp (°C),40,39.017
+MEA Conc (wt%),30,39.744
 L/G Ratio,4,6.0

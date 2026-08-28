@@ -23,12 +23,46 @@ function readPayload() {
   }, {});
 }
 
+function getFlagLabel(value, type) {
+  if (type === 'capture') {
+    if (value >= 75) return { label: 'Good', className: 'good' };
+    if (value >= 45) return { label: 'Moderate', className: 'moderate' };
+    return { label: 'Bad', className: 'bad' };
+  }
+
+  if (type === 'duty') {
+    if (value <= 3.5) return { label: 'Good', className: 'good' };
+    if (value <= 5.0) return { label: 'Moderate', className: 'moderate' };
+    return { label: 'Bad', className: 'bad' };
+  }
+
+  if (value >= 3500) return { label: 'Good', className: 'good' };
+  if (value >= 2500) return { label: 'Moderate', className: 'moderate' };
+  return { label: 'Bad', className: 'bad' };
+}
+
+function updateFlag(elementId, value, type) {
+  const { label, className } = getFlagLabel(value, type);
+  const element = document.getElementById(elementId);
+  if (!element) return;
+  element.textContent = label;
+  element.className = `status-badge ${className}`;
+}
+
 function setMetricValues(data) {
-  document.getElementById('captureValue').textContent = Number(data.capture_efficiency_pct).toFixed(2);
-  document.getElementById('dutyValue').textContent = Number(data.reboiler_duty_mj_kg_co2).toFixed(4);
-  document.getElementById('removedValue').textContent = Number(data.estimated_co2_removed_kg_hr).toFixed(2);
+  const capture = Number(data.capture_efficiency_pct);
+  const duty = Number(data.reboiler_duty_mj_kg_co2);
+  const co2Removed = Number(data.estimated_co2_removed_kg_hr);
+
+  document.getElementById('captureValue').textContent = capture.toFixed(2);
+  document.getElementById('dutyValue').textContent = duty.toFixed(4);
+  document.getElementById('removedValue').textContent = co2Removed.toFixed(2);
   document.getElementById('removedKmol').textContent = Number(data.estimated_co2_removed_kmol_hr).toFixed(4);
   document.getElementById('thermalLoad').textContent = Number(data.reboiler_total_mj_hr).toFixed(2);
+
+  updateFlag('captureFlag', capture, 'capture');
+  updateFlag('dutyFlag', duty, 'duty');
+  updateFlag('removedFlag', co2Removed, 'co2');
 }
 
 window.runPrediction = async function runPrediction() {
@@ -114,8 +148,37 @@ function apply3DMovement() {
 
 document.getElementById('runPrediction').addEventListener('click', runPrediction);
 
+function setupGalleryModal() {
+  const modal = document.getElementById('imageModal');
+  const modalImg = document.getElementById('modalImage');
+  const modalTitle = document.getElementById('modalTitle');
+  const closeButton = document.querySelector('.image-modal-close');
+
+  document.querySelectorAll('.gallery-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      modalImg.src = card.dataset.src;
+      modalTitle.textContent = card.dataset.title;
+      modal.classList.add('is-visible');
+      modal.setAttribute('aria-hidden', 'false');
+    });
+  });
+
+  const closeModal = () => {
+    modal.classList.remove('is-visible');
+    modal.setAttribute('aria-hidden', 'true');
+  };
+
+  closeButton.addEventListener('click', closeModal);
+  modal.addEventListener('click', (event) => {
+    if (event.target.dataset.close === 'true' || event.target === modal) {
+      closeModal();
+    }
+  });
+}
+
 window.addEventListener('load', async () => {
   apply3DMovement();
+  setupGalleryModal();
   await runPrediction();
 });
 
