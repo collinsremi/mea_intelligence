@@ -1,0 +1,7 @@
+Model,Target,R2,RMSE,MAE,MAPE(%)
+ANN,CO2_Capture_Efficiency_%,0.2602,13.2719,10.6751,18.21
+ANN,Reboiler_Duty_MJ_kgCO2,0.1299,0.7794,0.6458,14.1
+Random Forest,CO2_Capture_Efficiency_%,0.2298,13.5414,10.7975,18.48
+Random Forest,Reboiler_Duty_MJ_kgCO2,0.1569,0.7672,0.6385,13.85
+Gradient Boosting,CO2_Capture_Efficiency_%,0.2574,13.2968,10.7145,18.32
+Gradient Boosting,Reboiler_Duty_MJ_kgCO2,0.1672,0.7625,0.6363,13.82

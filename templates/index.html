@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MEA CO2 Capture Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="brand-wrap">
+          <div class="brand-mark">CO₂</div>
+          <div>
+            <p class="eyebrow">Process optimization</p>
+            <h1>MEA Capture Intelligence</h1>
+          </div>
+        </div>
+        <div class="status-pill">
+          <span class="live-dot"></span>
+          Surrogate model active
+        </div>
+      </header>
+
+      <main class="dashboard-grid">
+        <section class="panel control-panel tilt-panel">
+          <div class="panel-header">
+            <h2>Operating inputs</h2>
+            <span>Process conditions</span>
+          </div>
+
+          <div class="inputs-grid">
+            <label>
+              <span>Flue gas flow</span>
+              <input type="number" id="Flue_Gas_Flow_kmolhr" value="1200" step="10" />
+              <small>kmol/hr</small>
+            </label>
+
+            <label>
+              <span>Inlet CO₂</span>
+              <input type="number" id="Inlet_CO2_mol%" value="12" step="0.5" />
+              <small>mol%</small>
+            </label>
+
+            <label>
+              <span>Absorber temperature</span>
+              <input type="number" id="Absorber_Temp_C" value="45" step="1" />
+              <small>°C</small>
+            </label>
+
+            <label>
+              <span>MEA concentration</span>
+              <input type="number" id="MEA_Concentration_wt%" value="30" step="1" />
+              <small>wt%</small>
+            </label>
+
+            <label>
+              <span>L/G ratio</span>
+              <input type="number" id="LG_Ratio" value="4.2" step="0.1" />
+              <small>kg/kg</small>
+            </label>
+          </div>
+
+          <button id="runPrediction" class="primary-button">Run prediction</button>
+        </section>
+
+        <section class="panel results-panel tilt-panel">
+          <div class="panel-header">
+            <h2>Predicted performance</h2>
+            <span>Model output</span>
+          </div>
+
+          <div class="metric-grid">
+            <article class="metric-card accent-blue">
+              <div class="metric-label">Capture efficiency</div>
+              <div class="metric-value" id="captureValue">0.00</div>
+              <div class="metric-unit">%</div>
+            </article>
+
+            <article class="metric-card accent-amber">
+              <div class="metric-label">Reboiler duty</div>
+              <div class="metric-value" id="dutyValue">0.0000</div>
+              <div class="metric-unit">MJ/kg CO₂</div>
+            </article>
+
+            <article class="metric-card accent-green">
+              <div class="metric-label">CO₂ removed</div>
+              <div class="metric-value" id="removedValue">0.00</div>
+              <div class="metric-unit">kg/hr</div>
+            </article>
+          </div>
+
+          <div class="signal-strip">
+            <div>
+              <span class="mini-label">Estimated removal</span>
+              <strong id="removedKmol">0.0000</strong>
+              <small>kmol/hr</small>
+            </div>
+            <div>
+              <span class="mini-label">Thermal load</span>
+              <strong id="thermalLoad">0.00</strong>
+              <small>MJ/hr</small>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <section class="analytics-grid">
+        <article class="panel chart-panel tilt-panel">
+          <div class="panel-header">
+            <h2>Performance by condition</h2>
+            <span>Capture vs duty</span>
+          </div>
+          <div id="captureDutyChart" class="chart-box"></div>
+        </article>
+
+        <article class="panel chart-panel tilt-panel">
+          <div class="panel-header">
+            <h2>Process sensitivity</h2>
+            <span>Feature influence</span>
+          </div>
+          <div id="sensitivityChart" class="chart-box"></div>
+        </article>
+      </section>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  </body>
+</html>
