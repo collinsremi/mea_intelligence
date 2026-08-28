@@ -1,14 +1,21 @@
-"""Custom amine-based post-combustion CO2 capture simulation.
+"""Reduced-order MEA CO2 capture surrogate used to generate synthetic process data.
 
-This script implements a reduced-order, Python-based absorber/stripper model inspired by
- the methodology described in the project document:
-  - 9 process variables sampled over a defined operating envelope
-  - rate-based style mass transfer / kinetic effects represented through simplified equations
-  - Latin Hypercube Sampling for input coverage
-  - CSV export of the resulting process outputs
+This script does NOT implement a rigorous absorber/stripper model based on
+Kent-Eisenberg equilibrium, Onda mass-transfer correlations, Hikita/Austgen
+kinetics, or a differential packed-height balance. Those models are not solved
+here.
 
-This is intentionally a custom engineering approximation, not a full commercial-scale
- electrolyte model. It is structured to match the project's workflow and output schema.
+Instead, this project uses a deliberately simplified engineering surrogate built
+from dimensionless operating ratios and empirical response terms. It is designed
+for two purposes only:
+  - generate a broad, realistic operating envelope for surrogate-model training
+  - provide a reproducible dataset for evaluating ML models for capture efficiency
+    and reboiler duty prediction
+
+The formulation intentionally captures the dominant trends in MEA capture
+performance (solvent strength, gas load, CO2 concentration, lean loading,
+regeneration temperature, and process loading effects) without claiming to be a
+first-principles process model.
 """
 
 from __future__ import annotations
@@ -62,13 +69,16 @@ def generate_latin_hypercube(n_samples: int, bounds: dict[str, tuple[float, floa
 
 
 def simulate_case(row: dict[str, float]) -> dict[str, float]:
-    """Reduced-order process simulation for one case.
+    """Synthetic process response for one operating case.
 
-    The model captures the dominant process trends described in the methodology:
-      - more solvent / higher L/G / higher MEA concentration improves absorption
-      - higher inlet CO2 and higher gas flow push the load on the absorber
-      - lower inlet temperature and lower lean loading improve capture
-      - higher reboiler temperature increases regeneration energy demand
+    This function is intentionally a reduced-order, empirical surrogate. It does
+    not solve equilibrium, mass transfer, or kinetics in a mechanistic sense, and
+    it does not march along absorber/stripper height. Instead, it uses a
+    dimensionless operating envelope and exponential response terms to emulate the
+    dominant performance trends expected for MEA capture systems.
+
+    The outputs are used for ML training and process optimization, not for detailed
+    equipment design or rigorous thermodynamic simulation.
     """
     F_G = row["F_G"]
     y_CO2 = row["y_CO2"] / 100.0
