@@ -73,10 +73,10 @@ function drawCharts(data) {
   const sensitivityData = [
     {
       type: 'bar',
-      x: ['Flue gas', 'CO₂ inlet', 'Absorber T', 'MEA', 'L/G'],
-      y: [0.78, 0.92, 0.43, 0.86, 0.97],
+      x: ['Flue gas', 'CO₂ inlet', 'Absorber T', 'L/G', 'MEA', 'Lean load'],
+      y: [1.15, 2.13, 0.60, 4.31, 2.45, 6.40],
       marker: {
-        color: ['#4da3ff', '#50e0ff', '#ffb84d', '#38d39f', '#8db9ff'],
+        color: ['#4da3ff', '#50e0ff', '#ffb84d', '#7f8cff', '#38d39f', '#ff7a7a'],
       },
     }
   ];

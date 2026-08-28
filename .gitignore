@@ -5,4 +5,9 @@ __pycache__/
 *.pyd
 .DS_Store
 *.log
-Chapters_1_to_4_Updated.docx
+*.doc
+*.docx
+*.pdf
+*.rtf
+*.odt
+~$*

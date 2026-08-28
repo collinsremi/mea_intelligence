@@ -22,7 +22,7 @@
         </div>
         <div class="status-pill">
           <span class="live-dot"></span>
-          Surrogate model active
+          {{ model_name }} surrogate active
         </div>
       </header>
 
@@ -125,6 +125,31 @@
           </div>
           <div id="sensitivityChart" class="chart-box"></div>
         </article>
+      </section>
+
+      <section class="panel image-panel">
+        <div class="panel-header">
+          <h2>Model evaluation gallery</h2>
+          <span>Verified performance plots</span>
+        </div>
+        <div class="image-grid">
+          <figure>
+            <img src="/y/model_comparison.png" alt="Model comparison results" />
+            <figcaption>Model comparison</figcaption>
+          </figure>
+          <figure>
+            <img src="/y/parity_plots.png" alt="Parity plots for actual versus predicted outputs" />
+            <figcaption>Actual vs predicted</figcaption>
+          </figure>
+          <figure>
+            <img src="/y/feature_importance.png" alt="Feature importance plot" />
+            <figcaption>Feature importance</figcaption>
+          </figure>
+          <figure>
+            <img src="/y/ga_convergence.png" alt="Genetic algorithm convergence plot" />
+            <figcaption>GA convergence</figcaption>
+          </figure>
+        </div>
       </section>
     </div>
 

@@ -40,12 +40,9 @@ sns.set_style("whitegrid")
 
 
 def prepare_dataset(project_dir: Path) -> pd.DataFrame:
-    """Create a training dataset in the format expected by the ML pipeline."""
+    """Create the full engineering dataset required by the surrogate model."""
     source_csv = project_dir / "simulation_results.csv"
     dataset_csv = project_dir / "CO2_dataset.csv"
-
-    if dataset_csv.exists():
-        return pd.read_csv(dataset_csv)
 
     if not source_csv.exists():
         raise FileNotFoundError(
@@ -53,15 +50,35 @@ def prepare_dataset(project_dir: Path) -> pd.DataFrame:
         )
 
     df_src = pd.read_csv(source_csv)
-    df = pd.DataFrame({
-        "Flue_Gas_Flow_kmolhr": df_src["F_G"],
-        "Inlet_CO2_mol%": df_src["y_CO2"],
-        "Absorber_Temp_C": df_src["T_in"],
-        "MEA_Concentration_wt%": df_src["C_MEA"],
-        "LG_Ratio": df_src["L_G"],
-        "CO2_Capture_Efficiency_%": df_src["capture_efficiency_pct"],
-        "Reboiler_Duty_MJ_kgCO2": df_src["specific_reboiler_duty_MJ_kgCO2"],
-    })
+    full_inputs = [
+        "F_G",
+        "y_CO2",
+        "T_in",
+        "L_G",
+        "L",
+        "C_MEA",
+        "T_reb",
+        "alpha_lean",
+        "P_abs",
+    ]
+    full_targets = [
+        "capture_efficiency_pct",
+        "specific_reboiler_duty_MJ_kgCO2",
+    ]
+    df = df_src[full_inputs + full_targets].copy()
+    df.columns = [
+        "Flue_Gas_Flow_kmolhr",
+        "Inlet_CO2_mol%",
+        "Absorber_Temp_C",
+        "LG_Ratio",
+        "L",
+        "MEA_Concentration_wt%",
+        "T_reb",
+        "alpha_lean",
+        "P_abs",
+        "CO2_Capture_Efficiency_%",
+        "Reboiler_Duty_MJ_kgCO2",
+    ]
 
     df.to_csv(dataset_csv, index=False)
     return df
@@ -86,16 +103,24 @@ FEATURES = [
     "Flue_Gas_Flow_kmolhr",
     "Inlet_CO2_mol%",
     "Absorber_Temp_C",
-    "MEA_Concentration_wt%",
     "LG_Ratio",
+    "L",
+    "MEA_Concentration_wt%",
+    "T_reb",
+    "alpha_lean",
+    "P_abs",
 ]
 TARGETS = ["CO2_Capture_Efficiency_%", "Reboiler_Duty_MJ_kgCO2"]
 FEATURE_LABELS = [
     "Flue Gas Flow\n(kmol/hr)",
     "Inlet CO₂\n(mol%)",
     "Absorber Temp\n(°C)",
-    "MEA Conc\n(wt%)",
     "L/G Ratio\n(kg/kg)",
+    "Liquid Rate\n(kg/hr)",
+    "MEA Conc\n(wt%)",
+    "Reboiler Temp\n(°C)",
+    "Lean Loading",
+    "Absorber Pressure\n(bar)",
 ]
 
 x = df[FEATURES].values
@@ -365,8 +390,24 @@ W_ETA = 0.6
 W_Q = 0.4
 
 
+def to_full_feature_vector(five_var):
+    flow, co2_in, temp, meaconc, lg_ratio = five_var
+    return np.array([
+        flow,
+        co2_in,
+        temp,
+        lg_ratio,
+        620.0 * (lg_ratio / 4.2),
+        meaconc,
+        115.0,
+        0.22,
+        1.1,
+    ], dtype=float)
+
+
 def fitness(individual):
-    pred = best_model.predict([individual])[0]
+    full_feature = to_full_feature_vector(individual)
+    pred = best_model.predict([full_feature])[0]
     eta_n = (pred[0] - 30) / (99 - 30)
     q_n = (pred[1] - 2.5) / (5.5 - 2.5)
     return W_ETA * eta_n - W_Q * q_n
@@ -408,7 +449,7 @@ for gen in range(N_GEN):
     if (gen + 1) % 50 == 0:
         print(f"  Generation {gen + 1:>3} — best fitness: {best_fit:.4f}")
 
-opt_pred = best_model.predict([best_individual])[0]
+opt_pred = best_model.predict([to_full_feature_vector(best_individual)])[0]
 print(f"\n  ── Optimisation Results ──────────────────────────────")
 print(f"  Flue Gas Flow Rate   : {best_individual[0]:.1f} kmol/hr")
 print(f"  Inlet CO₂ Conc       : {best_individual[1]:.2f} mol%")
@@ -420,7 +461,7 @@ print(f"  CO₂ Capture Efficiency : {opt_pred[0]:.2f} %")
 print(f"  Specific Reboiler Duty : {opt_pred[1]:.4f} MJ/kg CO₂")
 
 baseline = np.array([1000, 13, 40, 30, 4])
-base_pred = best_model.predict([baseline])[0]
+base_pred = best_model.predict([to_full_feature_vector(baseline)])[0]
 print(f"\n  ── Improvement vs Baseline ───────────────────────────")
 print(f"  Capture efficiency: {base_pred[0]:.2f}% → {opt_pred[0]:.2f}%  "
       f"(+{opt_pred[0]-base_pred[0]:.2f}%)")
